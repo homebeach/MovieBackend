@@ -14,7 +14,7 @@ import org.bson.BsonInt64;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import static com.mongodb.client.model.Filters.eq;
+import org.json.*;
 import static java.lang.Integer.parseInt;
 
 @WebServlet("/MovieServlet")
@@ -65,7 +65,7 @@ public class MovieServlet extends HttpServlet {
                 MongoCollection<Document> movies = database.getCollection("movies");
                 MongoCursor<Document> cursor = movies.find(query).iterator();
                 while (cursor.hasNext()) {
-                    out.println("collection is " +cursor.next().toJson() );
+                    out.println(cursor.next().toJson() );
                 }
 
             } catch (MongoException me) {
@@ -76,6 +76,26 @@ public class MovieServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        PrintWriter out = response.getWriter();
+
+        String paramMovie = request.getParameter("movie");
+        JSONObject jsonObject =  HTTP.toJSONObject(paramMovie);
+
+        try (MongoClient mongoClient = MongoClients.create(uri)) {
+            MongoDatabase database = mongoClient.getDatabase("test");
+            MongoCollection<Document> movies = database.getCollection("movies");
+
+
+            try {
+                Document movie = Document.parse(paramMovie);
+                movies.insertOne(movie);
+                out.println("Success! Inserted document");
+            } catch (MongoException me) {
+                out.println("Unable to insert due to an error: " + me);
+            }
+        }
+
 
     }
 }
