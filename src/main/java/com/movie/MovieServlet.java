@@ -3,8 +3,7 @@ package com.movie;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 
 import com.mongodb.*;
 import com.mongodb.client.*;
@@ -16,6 +15,11 @@ import org.bson.conversions.Bson;
 
 import org.json.*;
 import static java.lang.Integer.parseInt;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 
 @WebServlet("/MovieServlet")
 public class MovieServlet extends HttpServlet {
@@ -79,23 +83,25 @@ public class MovieServlet extends HttpServlet {
 
         PrintWriter out = response.getWriter();
 
-        String paramMovie = request.getParameter("movie");
-        JSONObject jsonObject =  HTTP.toJSONObject(paramMovie);
+        out.println("Hello world!");
+
+        JsonObject data = new Gson().fromJson(request.getReader(), JsonObject.class);
+
+        out.println(data.toString());
 
         try (MongoClient mongoClient = MongoClients.create(uri)) {
             MongoDatabase database = mongoClient.getDatabase("test");
-            MongoCollection<Document> movies = database.getCollection("movies");
-
-
             try {
-                Document movie = Document.parse(paramMovie);
-                movies.insertOne(movie);
-                out.println("Success! Inserted document");
+                Document document = Document.parse(data.toString());
+
+                database.getCollection("movies").insertOne(document);
+                out.println("Document successfully inserted.");
+
             } catch (MongoException me) {
-                out.println("Unable to insert due to an error: " + me);
+                out.println("<h3>An error occurred while attempting to run a command: " + me + "</h3>");
             }
         }
 
-
     }
+
 }
