@@ -4,10 +4,12 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.*;
+import java.util.regex.Pattern;
 
 import com.mongodb.*;
 import com.mongodb.client.*;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.BsonDocument;
 import org.bson.BsonInt64;
@@ -50,12 +52,45 @@ public class MovieServlet extends HttpServlet {
 
         String paramGenre = request.getParameter("genres");
         if(paramGenre != null) {
-             and.add(new BasicDBObject("genres", paramGenre));
+
+            String[] genres = paramGenre.split(",");
+            and.add(new BasicDBObject("genres", genres));
         }
 
         String paramAgeLimit = request.getParameter("ageLimit");
         if(paramAgeLimit != null) {
-            and.add(new BasicDBObject("ageLimit", paramAgeLimit));
+            and.add(new BasicDBObject("ageLimit", parseInt(paramAgeLimit)));
+        }
+
+        String paramRating = request.getParameter("rating");
+        if(paramRating != null) {
+            and.add(new BasicDBObject("rating", parseInt(paramRating)));
+        }
+
+        String paramActors = request.getParameter("actors");
+        if(paramActors != null) {
+            try {
+                Document document = Document.parse(paramActors);
+                and.add(new BasicDBObject("actors", document));
+            } catch (JSONException err){
+                out.println(err.toString());
+            }
+        }
+
+        String paramDirector = request.getParameter("director");
+        if(paramDirector != null) {
+            try {
+                Document document = Document.parse(paramDirector);
+                and.add(new BasicDBObject("director", document));
+            } catch (JSONException err){
+                out.println(err.toString());
+            }
+        }
+
+
+        String paramSynopsis = request.getParameter("synopsis");
+        if(paramSynopsis != null) {
+            and.add(new BasicDBObject("synopsis", Pattern.compile(paramSynopsis, Pattern.CASE_INSENSITIVE)));
         }
 
         BasicDBObject query;
