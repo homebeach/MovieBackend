@@ -70,8 +70,11 @@ public class MovieServlet extends HttpServlet {
         String paramActors = request.getParameter("actors");
         if(paramActors != null) {
             try {
-                Document document = Document.parse(paramActors);
-                and.add(new BasicDBObject("actors", document));
+                JSONArray actors = new JSONArray(paramActors);
+                for(int i=0; i < actors.length(); i++){
+                    Document document = Document.parse(actors.get(i).toString());
+                    and.add(new BasicDBObject("actors", document));
+                }
             } catch (JSONException err){
                 out.println(err.toString());
             }
