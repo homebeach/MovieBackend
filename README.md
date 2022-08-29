@@ -1,3 +1,1 @@
 # MovieBackend
-
-Ratkaisu GoForen ennakkotehtävään
